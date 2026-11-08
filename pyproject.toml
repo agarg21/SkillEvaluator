@@ -225,4 +225,5 @@ addopts = "--tb=short -m 'not live and not integration'"
 markers = [
     "integration: end-to-end integration tests (may require fixtures or longer runtime)",
     "live: live tests against the in-process Harbor backend (requires the tier3 extra + NVIDIA_API_KEY)",
+    "timing: elapsed-time assertions; CI runs them serially after the parallel pass",
 ]

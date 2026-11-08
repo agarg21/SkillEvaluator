@@ -622,3 +622,51 @@ def harbor_eval_template() -> ModuleType:
 def make_urllib_json_response() -> Callable[[Any], MockUrllibResponse]:
     """Return a factory that builds MockUrllibResponse instances from payloads."""
     return MockUrllibResponse
+
+
+# Elapsed-time tests: run serially after the parallel pass (see the coverage step in ci.yml).
+TIMING_TESTS = frozenset(
+    {
+        "tests/test_harbor_local_mode.py::test_blocked_callback_does_not_replace_command_timeout_with_cancelled_error",
+        "tests/test_harbor_local_mode.py::test_streamed_exec_escalates_after_launcher_exits_with_term_ignoring_descendant",
+        "tests/test_harbor_local_mode.py::test_streamed_exec_stays_bounded_when_output_closes_before_process_exit",
+        "tests/test_harbor_metrics_truth.py::test_balanced_large_exact_test_uses_constant_time_symmetric_tail",
+        "tests/test_harbor_metrics_truth.py::test_probability_text_is_fast_and_nonzero_beyond_decimal_exponent_range",
+        "tests/test_harbor_runner_status.py::test_bounded_harbor_process_cancellation_kills_harbor_that_ignores_sigterm",
+        "tests/test_harbor_runner_status.py::test_bounded_harbor_process_contains_tree_after_stdin_delivery_error",
+        "tests/test_harbor_runner_status.py::test_bounded_harbor_process_failure_reaps_descendants",
+        "tests/test_harbor_runner_status.py::test_bounded_harbor_process_timeout_includes_blocked_stdin_delivery",
+        "tests/test_harbor_secure_copy.py::test_fallback_regular_to_fifo_swap_never_blocks",
+        "tests/test_harbor_secure_docker_environment.py::test_compose_model_parser_rejects_non_regular_include_without_blocking",
+        "tests/test_harbor_secure_docker_environment.py::test_streaming_redactor_nested_terminal_matching_work_is_linear",
+        "tests/test_model_catalog.py::test_catalog_body_trickle_cannot_extend_the_wall_clock_deadline",
+        "tests/test_model_catalog.py::test_catalog_dns_resolution_cannot_extend_the_wall_clock_deadline",
+        "tests/test_model_catalog.py::test_catalog_status_and_header_trickles_cannot_extend_the_wall_clock_deadline",
+        "tests/test_nvidia_build_bridge.py::test_backend_dns_resolution_obeys_deadline_without_late_request_or_resolver_growth",
+        "tests/test_nvidia_build_bridge.py::test_backend_slow_drip_response_headers_are_interrupted_at_the_absolute_deadline",
+        "tests/test_redaction_assignments.py::test_redact_sensitive_text_is_fast_on_adversarial_inputs",
+        "tests/test_redaction_assignments.py::test_redact_sensitive_text_redacts_value_after_long_key_run",
+        "tests/tier3/test_checks_secret_patterns.py::test_network_exfiltration_check_scales_linearly",
+        "tests/tier3/test_judge_failure_artifacts.py::test_required_judge_deadline_interrupts_a_stalled_response_body",
+        "tests/tier3/test_judge_failure_artifacts.py::test_verifier_retries_leave_time_to_write_failure_artifacts",
+        "tests/tier3/test_log_jwt_redaction.py::test_log_jwt_redaction_is_fast_on_adversarial_lines",
+        "tests/tier3/test_mcp_proof.py::test_a_slow_dns_lookup_counts_against_the_probe_deadline",
+        "tests/tier3/test_mcp_proof.py::test_an_off_origin_sse_endpoint_fails_fast",
+        "tests/tier3/test_mcp_proof.py::test_an_oversized_response_ends_the_probe_at_once_without_mcp_tracebacks",
+        "tests/utils/test_rich_markup.py::test_long_input_is_escaped_in_linear_time",
+        "tests/validators/test_mcp_static.py::test_inline_secret_scan_is_linear_on_a_long_jwt_like_run",
+        "tests/validators/test_pii_waivers.py::test_waiver_file_with_chained_merges_is_rejected_without_expanding_them",
+        "tests/validators/test_plugin_hook_risk_bounds.py::test_a_hook_script_of_backslashes_at_the_scan_limit_is_scanned_quickly",
+        "tests/validators/test_plugin_hook_risk_bounds.py::test_escape_decoding_is_linear_on_a_long_backslash_run",
+        "tests/validators/test_plugin_hook_risk_bounds.py::test_redos_matchers_are_classified_quickly",
+        "tests/validators/test_plugin_hook_risk_bounds.py::test_remote_code_scan_is_linear_on_padded_scripts",
+        "tests/validators/test_plugin_static_risk_review_fixes.py::test_many_hooks_running_large_downloading_scripts_stay_fast",
+        "tests/validators/test_plugin_static_risk_review_fixes.py::test_unpack_and_run_scan_stays_linear_at_the_script_size_limit",
+    }
+)
+
+
+def pytest_collection_modifyitems(config, items):
+    for item in items:
+        if item.nodeid.split("[", 1)[0] in TIMING_TESTS:
+            item.add_marker(pytest.mark.timing)
